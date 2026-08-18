@@ -107,6 +107,8 @@ def get_unique_sources(docs):
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
+        with st.expander("Copy Message"):
+            st.code(msg["content"], language="markdown")
 
 if prompt_text := st.chat_input("Ask a question about your documents..."):
     if st.session_state.retriever is None:
@@ -117,12 +119,14 @@ if prompt_text := st.chat_input("Ask a question about your documents..."):
         st.session_state.messages.append({"role": "user", "content": prompt_text})
         with st.chat_message("user"):
             st.markdown(prompt_text)
+            with st.expander("Copy Message"):
+                st.code(prompt_text, language="markdown")
         
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
                 try:
                     llm = ChatGoogleGenerativeAI(
-                        model="gemini-1.5-pro-latest",
+                        model="gemini-1.5-pro",
                         temperature=0,
                         google_api_key=os.environ.get("GEMINI_API_KEY")
                     )
@@ -157,6 +161,8 @@ Question:
                         answer += sources_text
                     
                     st.markdown(answer)
+                    with st.expander("Copy Message"):
+                        st.code(answer, language="markdown")
                     st.session_state.messages.append({"role": "assistant", "content": answer})
                 except Exception as e:
                     st.error(f"Error during response generation: {e}")
