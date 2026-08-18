@@ -2,6 +2,7 @@ import os
 import uuid
 import tempfile
 import streamlit as st
+from st_copy import copy_button
 from dotenv import load_dotenv
 
 from langchain_community.document_loaders import PyPDFLoader
@@ -104,11 +105,16 @@ def get_unique_sources(docs):
     return seen
 
 # Chat interface
-for msg in st.session_state.messages:
+for idx, msg in enumerate(st.session_state.messages):
     with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
-        with st.expander("Copy Message"):
-            st.code(msg["content"], language="markdown")
+        col1, col2 = st.columns([0.9, 0.1])
+        with col1:
+            st.markdown(msg["content"])
+            if msg.get("sources"):
+                with st.expander("📚 Sources"):
+                    st.markdown("- " + "\n- ".join(msg["sources"]))
+        with col2:
+            copy_button(msg["content"], key=f"copy_hist_{idx}")
 
 if prompt_text := st.chat_input("Ask a question about your documents..."):
     if st.session_state.retriever is None:
@@ -118,9 +124,11 @@ if prompt_text := st.chat_input("Ask a question about your documents..."):
     else:
         st.session_state.messages.append({"role": "user", "content": prompt_text})
         with st.chat_message("user"):
-            st.markdown(prompt_text)
-            with st.expander("Copy Message"):
-                st.code(prompt_text, language="markdown")
+            col1, col2 = st.columns([0.9, 0.1])
+            with col1:
+                st.markdown(prompt_text)
+            with col2:
+                copy_button(prompt_text, key=f"copy_new_user_{len(st.session_state.messages)}")
         
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
@@ -156,13 +164,17 @@ Question:
                     answer = response.content
                     
                     sources = get_unique_sources(docs)
-                    if answer.strip().lower() not in ["i don't know.", "i don't know", '"i don\'t know."'] and sources:
-                        sources_text = "\n\n**Sources:**\n- " + "\n- ".join(sources)
-                        answer += sources_text
+                    valid_answer = answer.strip().lower() not in ["i don't know.", "i don't know", '"i don\'t know."']
+                    final_sources = sources if valid_answer and sources else []
                     
-                    st.markdown(answer)
-                    with st.expander("Copy Message"):
-                        st.code(answer, language="markdown")
-                    st.session_state.messages.append({"role": "assistant", "content": answer})
+                    st.session_state.messages.append({"role": "assistant", "content": answer, "sources": final_sources})
+                    col1, col2 = st.columns([0.9, 0.1])
+                    with col1:
+                        st.markdown(answer)
+                        if final_sources:
+                            with st.expander("📚 Sources"):
+                                st.markdown("- " + "\n- ".join(final_sources))
+                    with col2:
+                        copy_button(answer, key=f"copy_new_ast_{len(st.session_state.messages)}")
                 except Exception as e:
                     st.error(f"Error during response generation: {e}")

@@ -7,3 +7,4 @@ langchain-chroma
 pypdf
 chromadb
 python-dotenv
+st-copy
