@@ -163,6 +163,16 @@ Question:
                     response = llm.invoke(messages)
                     answer = response.content
                     
+                    # Handle new model behavior where content might be a list of blocks
+                    if isinstance(answer, list):
+                        text_parts = []
+                        for part in answer:
+                            if isinstance(part, dict) and "text" in part:
+                                text_parts.append(part["text"])
+                            elif isinstance(part, str):
+                                text_parts.append(part)
+                        answer = "".join(text_parts)
+                    
                     sources = get_unique_sources(docs)
                     valid_answer = answer.strip().lower() not in ["i don't know.", "i don't know", '"i don\'t know."']
                     final_sources = sources if valid_answer and sources else []
