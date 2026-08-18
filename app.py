@@ -134,7 +134,7 @@ if prompt_text := st.chat_input("Ask a question about your documents..."):
             with st.spinner("Thinking..."):
                 try:
                     llm = ChatGoogleGenerativeAI(
-                        model="gemini-2.5-flash",
+                        model="gemini-3.6-flash",
                         temperature=0,
                         google_api_key=os.environ.get("GEMINI_API_KEY")
                     )
