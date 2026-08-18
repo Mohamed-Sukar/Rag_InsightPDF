@@ -13,9 +13,9 @@ from langchain_core.prompts import ChatPromptTemplate
 # Load environment variables from .env
 load_dotenv()
 
-st.set_page_config(page_title="PDF Analysis System", page_icon="📄", layout="wide")
+st.set_page_config(page_title="PDF Analysis System", page_icon="⚡", layout="wide")
 
-st.title("📄 PDF Analysis System with Gemini")
+st.title("PDF Analysis System with Gemini")
 st.markdown("Upload PDFs and ask questions based on their content.")
 
 if "retriever" not in st.session_state:
